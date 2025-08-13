@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<script src="mercator.js"></script>
+<title>Mercator → Equirectangular Converter</title>
+</head>
+<body>
+  <h1>Mercator to Equirectangular Converter</h1>
+  <h4>Expects a square mercator projected map as input.</h4>
+
+  <input type="file" id="fileInput" accept="image/*">
+  <br><br>
+  <button id="convertBtn">Convert & Download</button>
+
+  <p class="github-link">
+    <a href="https://github.com/yourusername/your-repo" target="_blank">
+      View on GitHub
+    </a>
+  </p>
+
+  
+  <script>
+document.getElementById("convertBtn").addEventListener("click", async () => {
+  const fileInput = document.getElementById("fileInput");
+  if (!fileInput.files.length) {
+    alert("Please select a Mercator image first.");
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const img = new Image();
+  img.src = URL.createObjectURL(file);
+
+  img.onload = () => {
+    // Output width same as input width
+    const outWidth = img.width;
+    // Output height for equirectangular is exactly half the width
+    const outHeight = Math.round(outWidth / 2);
+
+    const outCanvas = mercatorToEquirectangular(img, outWidth, outHeight);
+
+    outCanvas.toBlob((blob) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "equirectangular.png";
+      a.click();
+    }, "image/png");
+  };
+});
+</script>
+</body>
+</html>

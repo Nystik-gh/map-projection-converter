@@ -1,0 +1,59 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f9fc;
+  color: #333;
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 0.5rem;
+}
+
+h4 {
+  font-weight: normal;
+  color: #555;
+  margin-top: 0;
+}
+
+input[type="file"] {
+  margin: 1rem 0;
+}
+
+button {
+  background-color: #007acc;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #005ea6;
+}
+
+button:active {
+  background-color: #004b87;
+}
+
+a {
+  color: #007acc;
+}
+
+.github-link {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.github-link a {
+  color: #007acc;
+  text-decoration: none;
+}
+
+.github-link a:hover {
+  text-decoration: underline;
+}
