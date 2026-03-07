@@ -3,52 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="style.css">
-<script src="mercator.js"></script>
-<title>Mercator → Equirectangular Converter</title>
+<script src="projections/mercator.js"></script>
+<script src="projections/nicolosi.js"></script>
+<script src="projections/index.js"></script>
+<title>Map Projection Converter</title>
 </head>
 <body>
-  <h1>Mercator to Equirectangular Converter</h1>
-  <h4>Expects a square mercator projected map as input.</h4>
+  <div class="container">
+    <header>
+      <h1>Map Projection Converter</h1>
+      <p class="subtitle">Convert various map projections to equirectangular.</p>
+    </header>
 
-  <input type="file" id="fileInput" accept="image/*">
-  <br><br>
-  <button id="convertBtn">Convert & Download</button>
+    <main>
+      <div class="upload-section">
+        <div class="form-group">
+          <label for="projectionSelect">Source Projection</label>
+          <select id="projectionSelect"></select>
+        </div>
+        
+        <div id="projectionConfig" class="projection-config"></div>
+        
+        <div class="form-group">
+          <label for="fileInput">Input Image</label>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+      </div>
 
-  <p class="github-link">
-    <a href="https://github.com/Nystik-gh/map-projection-converter" target="_blank">
-      View on GitHub
-    </a>
-  </p>
+      <div id="previewSection" class="preview-section" style="display: none;">
+        <div class="preview-pane">
+          <h3>Input</h3>
+          <div class="canvas-wrapper">
+            <canvas id="inputCanvas"></canvas>
+          </div>
+        </div>
+        
+        <div class="preview-pane">
+          <h3>Equirectangular Output</h3>
+          <div class="canvas-wrapper">
+            <canvas id="outputCanvas"></canvas>
+          </div>
+        </div>
+      </div>
 
-  
+      <div id="actionSection" class="action-section" style="display: none;">
+        <button id="downloadBtn">Download Full Resolution</button>
+        <div id="downloadSpinner" class="spinner" style="display: none;">
+          <div class="spinner-icon"></div>
+          <span>Rendering full resolution…</span>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p class="github-link">
+        <a href="https://github.com/Nystik-gh/map-projection-converter" target="_blank">
+          View on GitHub
+        </a>
+      </p>
+    </footer>
+  </div>
+
   <script>
-document.getElementById("convertBtn").addEventListener("click", async () => {
-  const fileInput = document.getElementById("fileInput");
-  if (!fileInput.files.length) {
-    alert("Please select a Mercator image first.");
-    return;
+let currentProjection = null;
+let currentImage = null;
+let outputCanvasCache = null;
+
+function initializeApp() {
+  const projectionSelect = document.getElementById('projectionSelect');
+  const configContainer = document.getElementById('projectionConfig');
+  const fileInput = document.getElementById('fileInput');
+  const allProjections = getAllProjections();
+  
+  allProjections.forEach(projection => {
+    const option = document.createElement('option');
+    option.value = projection.id;
+    option.textContent = projection.name;
+    projectionSelect.appendChild(option);
+  });
+  
+  currentProjection = allProjections[0];
+  currentProjection.renderConfig(configContainer, performConversion);
+  
+  projectionSelect.addEventListener('change', (e) => {
+    currentProjection = getProjectionById(e.target.value);
+    currentProjection.renderConfig(configContainer, performConversion);
+    if (currentImage) {
+      performConversion();
+    }
+  });
+  
+  fileInput.addEventListener('change', (e) => {
+    if (!e.target.files.length) return;
+    
+    const file = e.target.files[0];
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      currentImage = img;
+      performConversion();
+    };
+  });
+  
+  document.getElementById('downloadBtn').addEventListener('click', downloadResult);
+}
+
+function getPreparedImage() {
+  const config = currentProjection.getConfig();
+  if (currentProjection.prepareImage) {
+    return currentProjection.prepareImage(currentImage, config);
   }
+  return currentImage;
+}
 
-  const file = fileInput.files[0];
-  const img = new Image();
-  img.src = URL.createObjectURL(file);
+function updateInputPreview() {
+  if (!currentImage) return;
+  
+  const inputCanvas = document.getElementById('inputCanvas');
+  const previewSection = document.getElementById('previewSection');
+  const processedImage = getPreparedImage();
+  
+  const inputCtx = inputCanvas.getContext('2d');
+  inputCanvas.width = processedImage.width;
+  inputCanvas.height = processedImage.height;
+  inputCtx.drawImage(processedImage, 0, 0);
+  
+  if (currentProjection.renderInputOverlay) {
+    currentProjection.renderInputOverlay(inputCtx, processedImage.width, processedImage.height);
+  }
+  
+  previewSection.style.display = 'grid';
+}
 
-  img.onload = () => {
-    // Output width same as input width
-    const outWidth = img.width;
-    // Output height for equirectangular is exactly half the width
-    const outHeight = Math.round(outWidth / 2);
+function performConversion() {
+  if (!currentImage) return;
+  
+  if (currentProjection.showConfig) {
+    currentProjection.showConfig();
+    currentProjection._onInput = updateInputPreview;
+  }
+  
+  const processedImage = getPreparedImage();
+  
+  updateInputPreview();
+  
+  const outputCanvas = document.getElementById('outputCanvas');
+  const actionSection = document.getElementById('actionSection');
+  
+  outputCanvasCache = currentProjection.convert(processedImage);
+  
+  outputCanvas.width = outputCanvasCache.width;
+  outputCanvas.height = outputCanvasCache.height;
+  const outputCtx = outputCanvas.getContext('2d');
+  outputCtx.drawImage(outputCanvasCache, 0, 0);
+  
+  actionSection.style.display = 'block';
+}
 
-    const outCanvas = mercatorToEquirectangular(img, outWidth, outHeight);
-
-    outCanvas.toBlob((blob) => {
-      const a = document.createElement("a");
+function downloadResult() {
+  if (!currentImage) return;
+  
+  const processedImage = getPreparedImage();
+  const downloadBtn = document.getElementById('downloadBtn');
+  const spinner = document.getElementById('downloadSpinner');
+  
+  if (currentProjection.convertFullRes) {
+    downloadBtn.disabled = true;
+    spinner.style.display = 'flex';
+    
+    currentProjection.convertFullRes(processedImage).then(function(canvas) {
+      canvas.toBlob(function(blob) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'equirectangular.png';
+        a.click();
+        downloadBtn.disabled = false;
+        spinner.style.display = 'none';
+      }, 'image/png');
+    }).catch(function(err) {
+      console.error('Conversion failed:', err);
+      downloadBtn.disabled = false;
+      spinner.style.display = 'none';
+    });
+  } else {
+    outputCanvasCache.toBlob(function(blob) {
+      const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = "equirectangular.png";
+      a.download = 'equirectangular.png';
       a.click();
-    }, "image/png");
-  };
-});
+    }, 'image/png');
+  }
+}
+
+initializeApp();
 </script>
 </body>
 </html>
