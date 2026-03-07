@@ -1,19 +1,5 @@
 const WEB_MERCATOR_MAX_LATITUDE = 85.05112878;
 const BYTES_PER_PIXEL = 4;
-const MERCATOR_PREVIEW_MAX_HEIGHT = 1000;
-
-function downscaleMercatorPreview(image) {
-  if (image.height <= MERCATOR_PREVIEW_MAX_HEIGHT) return image;
-  const ratio = MERCATOR_PREVIEW_MAX_HEIGHT / image.height;
-  const w = Math.round(image.width * ratio);
-  const h = MERCATOR_PREVIEW_MAX_HEIGHT;
-  const c = document.createElement("canvas");
-  c.width = w;
-  c.height = h;
-  const ctx = c.getContext("2d");
-  ctx.drawImage(image, 0, 0, w, h);
-  return c;
-}
 
 function createCanvasFromImage(image) {
   const canvas = document.createElement("canvas");
@@ -97,7 +83,7 @@ const mercator = {
   },
 
   convert(image) {
-    const preview = downscaleMercatorPreview(image);
+    const preview = ProjectionUtils.downscaleForPreview(image);
     const outputWidth = preview.width;
     const outputHeight = Math.round(outputWidth / 2);
     return mercatorToEquirectangular(preview, outputWidth, outputHeight);

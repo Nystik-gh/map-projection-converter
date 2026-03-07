@@ -1,32 +1,9 @@
 const HALF_PI = Math.PI / 2;
 const TWO_PI = Math.PI * 2;
 const INV_HALF_PI = 1 / HALF_PI;
-const PREVIEW_MAX_HEIGHT = 1000;
-
-function getSourceData(image) {
-  const c = document.createElement("canvas");
-  c.width = image.width;
-  c.height = image.height;
-  const ctx = c.getContext("2d");
-  ctx.drawImage(image, 0, 0);
-  return ctx.getImageData(0, 0, image.width, image.height);
-}
-
-function downscaleForPreview(image) {
-  if (image.height <= PREVIEW_MAX_HEIGHT) return image;
-  const ratio = PREVIEW_MAX_HEIGHT / image.height;
-  const w = Math.round(image.width * ratio);
-  const h = PREVIEW_MAX_HEIGHT;
-  const c = document.createElement("canvas");
-  c.width = w;
-  c.height = h;
-  const ctx = c.getContext("2d");
-  ctx.drawImage(image, 0, 0, w, h);
-  return c;
-}
 
 function nicolosiToEquirectangular(image) {
-  const src = getSourceData(image).data;
+  const src = ProjectionUtils.getSourceData(image).data;
 
   const hemi = image.height;
   const outW = hemi * 2;
@@ -156,161 +133,60 @@ function nicolosiToEquirectangular(image) {
   return outputCanvas;
 }
 
-function nicolosiConvertWorker(image) {
-  return new Promise(function (resolve, reject) {
-    const sourceData = getSourceData(image);
-    const hemi = image.height;
-    const worker = new Worker("projections/nicolosi-worker.js");
-    worker.onmessage = function (e) {
-      const outW = e.data.width;
-      const outH = e.data.height;
-      const canvas = document.createElement("canvas");
-      canvas.width = outW;
-      canvas.height = outH;
-      const ctx = canvas.getContext("2d");
-      const imgData = ctx.createImageData(outW, outH);
-      imgData.data.set(e.data.out);
-      ctx.putImageData(imgData, 0, 0);
-      worker.terminate();
-      resolve(canvas);
-    };
-    worker.onerror = function (err) {
-      worker.terminate();
-      reject(err);
-    };
-    worker.postMessage({ src: sourceData.data, hemi: hemi }, [
-      sourceData.data.buffer,
-    ]);
-  });
-}
-
 const nicolosi = {
   id: "nicolosi",
   name: "Nicolosi Globular",
   description: "Two hemispheres side by side (2:1 ratio)",
 
   renderConfig(container, onChange) {
-    container.innerHTML = "";
-    this._onChange = onChange;
-    this._onInput = null;
+    ProjectionUtils.renderConfig(this, container, onChange);
   },
 
   showConfig() {
-    if (document.getElementById("nicolosiScale")) return;
-    const container = document.getElementById("projectionConfig");
-    container.innerHTML = `
-      <div class="config-group">
-        <label>Scale</label>
-        <div class="scale-controls">
-          <input type="range" id="nicolosiScale" min="0.5" max="1.5" step="0.001" value="1">
-          <input type="number" id="nicolosiScaleInput" min="0.5" max="1.5" step="0.001" value="1">
-        </div>
-      </div>
-      <div class="config-group">
-        <label>Offset X</label>
-        <div class="scale-controls">
-          <input type="range" id="nicolosiOffsetX" min="-100" max="100" step="0.001" value="0">
-          <input type="number" id="nicolosiOffsetXInput" min="-100" max="100" step="0.001" value="0">
-        </div>
-      </div>
-      <div class="config-group">
-        <label>Offset Y</label>
-        <div class="scale-controls">
-          <input type="range" id="nicolosiOffsetY" min="-100" max="100" step="0.001" value="0">
-          <input type="number" id="nicolosiOffsetYInput" min="-100" max="100" step="0.001" value="0">
-        </div>
-      </div>
-    `;
-
-    const setupControl = (sliderId, inputId, callback) => {
-      const slider = document.getElementById(sliderId);
-      const input = document.getElementById(inputId);
-      slider.addEventListener("input", () => {
-        input.value = slider.value;
-        if (this._onInput) this._onInput();
-      });
-      slider.addEventListener("change", () => {
-        if (this._onChange) this._onChange();
-      });
-      input.addEventListener("input", () => {
-        slider.value = input.value;
-        if (this._onInput) this._onInput();
-      });
-      input.addEventListener("change", () => {
-        if (this._onChange) this._onChange();
-      });
-    };
-
-    setupControl("nicolosiScale", "nicolosiScaleInput");
-    setupControl("nicolosiOffsetX", "nicolosiOffsetXInput");
-    setupControl("nicolosiOffsetY", "nicolosiOffsetYInput");
+    ProjectionUtils.showSliders(this, "nicolosi");
   },
 
   renderInputOverlay(ctx, width, height) {
-    const radius = height / 2;
-    const leftCenterX = radius;
-    const rightCenterX = width - radius;
-    const centerY = radius;
-
-    const overlay = document.createElement("canvas");
-    overlay.width = width;
-    overlay.height = height;
-    const oCtx = overlay.getContext("2d");
-
-    oCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    oCtx.fillRect(0, 0, width, height);
-
-    oCtx.globalCompositeOperation = "destination-out";
-    oCtx.fillStyle = "black";
-    oCtx.beginPath();
-    oCtx.arc(leftCenterX, centerY, radius, 0, 2 * Math.PI);
-    oCtx.fill();
-    oCtx.beginPath();
-    oCtx.arc(rightCenterX, centerY, radius, 0, 2 * Math.PI);
-    oCtx.fill();
-
-    ctx.drawImage(overlay, 0, 0);
+    ProjectionUtils.renderOverlayMask(
+      ctx,
+      width,
+      height,
+      function (oCtx, w, h) {
+        const radius = h / 2;
+        oCtx.beginPath();
+        oCtx.arc(radius, radius, radius, 0, 2 * Math.PI);
+        oCtx.fill();
+        oCtx.beginPath();
+        oCtx.arc(w - radius, radius, radius, 0, 2 * Math.PI);
+        oCtx.fill();
+      },
+    );
   },
 
   getConfig() {
-    const scaleSlider = document.getElementById("nicolosiScale");
-    const offsetXSlider = document.getElementById("nicolosiOffsetX");
-    const offsetYSlider = document.getElementById("nicolosiOffsetY");
-    return {
-      scale: scaleSlider ? parseFloat(scaleSlider.value) : 1,
-      offsetX: offsetXSlider ? parseFloat(offsetXSlider.value) : 0,
-      offsetY: offsetYSlider ? parseFloat(offsetYSlider.value) : 0,
-    };
+    return ProjectionUtils.getSliderConfig("nicolosi");
   },
 
   prepareImage(image, config) {
-    const scale = config.scale || 1;
-    const userOffsetX = config.offsetX || 0;
-    const userOffsetY = config.offsetY || 0;
-    const canvasHeight = Math.round(
-      Math.max(image.width, image.height) / scale,
-    );
-    const canvasWidth = canvasHeight * 2;
-
-    const prepared = document.createElement("canvas");
-    prepared.width = canvasWidth;
-    prepared.height = canvasHeight;
-    const ctx = prepared.getContext("2d");
-
-    const scaledWidth = image.width * (canvasHeight / image.height) * scale;
-    const scaledHeight = canvasHeight * scale;
-    const offsetX = (canvasWidth - scaledWidth) / 2 + userOffsetX;
-    const offsetY = (canvasHeight - scaledHeight) / 2 + userOffsetY;
-
-    ctx.drawImage(image, offsetX, offsetY, scaledWidth, scaledHeight);
-    return prepared;
+    return ProjectionUtils.prepareImage(image, config);
   },
 
   convert(image) {
-    return nicolosiToEquirectangular(downscaleForPreview(image));
+    return nicolosiToEquirectangular(
+      ProjectionUtils.downscaleForPreview(image),
+    );
   },
 
   convertFullRes(image) {
-    return nicolosiConvertWorker(image);
+    return ProjectionUtils.convertWithWorker(
+      image,
+      "projections/nicolosi-worker.js",
+      function (sourceData, img) {
+        return {
+          data: { src: sourceData.data, hemi: img.height },
+          transfer: [sourceData.data.buffer],
+        };
+      },
+    );
   },
 };
