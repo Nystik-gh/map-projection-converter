@@ -1,4 +1,4 @@
-const projections = [mercator, nicolosi];
+const projections = [mercator, nicolosi, robinson];
 
 function getProjectionById(id) {
   return projections.find((p) => p.id === id);

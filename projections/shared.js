@@ -23,14 +23,14 @@ const ProjectionUtils = {
     return c;
   },
 
-  prepareImage(image, config) {
+  prepareImage(image, config, aspectRatio = 2) {
     const scale = config.scale || 1;
     const userOffsetX = config.offsetX || 0;
     const userOffsetY = config.offsetY || 0;
     const canvasHeight = Math.round(
       Math.max(image.width, image.height) / scale,
     );
-    const canvasWidth = canvasHeight * 2;
+    const canvasWidth = Math.round(canvasHeight * aspectRatio);
 
     const prepared = document.createElement("canvas");
     prepared.width = canvasWidth;
