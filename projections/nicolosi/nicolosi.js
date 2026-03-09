@@ -58,7 +58,7 @@ const nicolosi = {
   convertFullRes(image) {
     return ProjectionUtils.convertWithWorker(
       image,
-      "projections/nicolosi-worker.js",
+      "projections/nicolosi/nicolosi-worker.js",
       function (sourceData, img) {
         return {
           data: { src: sourceData.data, hemi: img.height },

@@ -82,7 +82,7 @@ const robinson = {
   convertFullRes(image) {
     return ProjectionUtils.convertWithWorker(
       image,
-      "projections/robinson-worker.js",
+      "projections/robinson/robinson-worker.js",
       function (sourceData, img) {
         return {
           data: { src: sourceData.data, width: img.width, height: img.height },
