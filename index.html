@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="style.css">
-
+<script src="analytics.js"></script>
 <script src="projections/shared.js"></script>
 <script src="projections/mercator/mercator.js"></script>
 <script src="projections/nicolosi/nicolosi-core.js"></script>
@@ -12,6 +12,8 @@
 <script src="projections/robinson/robinson.js"></script>
 <script src="projections/winkel-tripel/winkel-tripel-core.js"></script>
 <script src="projections/winkel-tripel/winkel-tripel.js"></script>
+<script src="projections/mollweide/mollweide-core.js"></script>
+<script src="projections/mollweide/mollweide.js"></script>
 <script src="projections/index.js"></script>
 <title>Map Projection Converter</title>
 </head>
@@ -66,7 +68,7 @@
       </div>
 
       <div id="actionSection" class="action-section" style="display: none;">
-        <button id="downloadBtn">Download Full Resolution</button>
+        <button id="downloadBtn">Convert & Download</button>
         <div id="downloadSpinner" class="spinner" style="display: none;">
           <div class="spinner-icon"></div>
           <span>Rendering full resolution…</span>
@@ -78,6 +80,10 @@
       <p class="github-link">
         <a href="https://github.com/Nystik-gh/map-projection-converter" target="_blank">
           View on GitHub
+        </a>
+        ·
+        <a href="https://thiefling.com/things/" target="_blank">
+          More Projects
         </a>
         ·
         <a href="https://thiefling.com/privacy-policy/" target="_blank">
