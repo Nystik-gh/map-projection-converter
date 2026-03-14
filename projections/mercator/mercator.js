@@ -1,72 +1,14 @@
-const WEB_MERCATOR_MAX_LATITUDE = 85.05112878;
-const BYTES_PER_PIXEL = 4;
-
-function createCanvasFromImage(image) {
+function mercatorToEquirectangular(image) {
+  const src = ProjectionUtils.getSourceData(image).data;
+  const result = mercatorConvertPixels(src, image.width, image.height);
   const canvas = document.createElement("canvas");
-  canvas.width = image.width;
-  canvas.height = image.height;
+  canvas.width = result.width;
+  canvas.height = result.height;
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(image, 0, 0);
+  const imgData = ctx.createImageData(result.width, result.height);
+  imgData.data.set(result.out);
+  ctx.putImageData(imgData, 0, 0);
   return canvas;
-}
-
-function mercatorToEquirectangular(mercatorImage, outputWidth, outputHeight) {
-  const sourceCanvas = createCanvasFromImage(mercatorImage);
-  const sourceCtx = sourceCanvas.getContext("2d");
-  const sourceData = sourceCtx.getImageData(
-    0,
-    0,
-    sourceCanvas.width,
-    sourceCanvas.height,
-  );
-
-  const { width: sourceWidth, height: sourceHeight } = sourceCanvas;
-
-  const outputCanvas = document.createElement("canvas");
-  outputCanvas.width = outputWidth;
-  outputCanvas.height = outputHeight;
-  const outputCtx = outputCanvas.getContext("2d");
-  const outputImageData = outputCtx.createImageData(outputWidth, outputHeight);
-
-  const maxLatRad = (WEB_MERCATOR_MAX_LATITUDE * Math.PI) / 180;
-  const mercatorYMax = Math.log(Math.tan(Math.PI / 4 + maxLatRad / 2));
-
-  for (let y = 0; y < outputHeight; y++) {
-    const latitude = Math.PI / 2 - (y / outputHeight) * Math.PI;
-
-    for (let x = 0; x < outputWidth; x++) {
-      const longitude = (x / outputWidth) * 2 * Math.PI - Math.PI;
-
-      const mercatorX = (longitude + Math.PI) / (2 * Math.PI);
-      const mercatorY =
-        (mercatorYMax - Math.log(Math.tan(Math.PI / 4 + latitude / 2))) /
-        (2 * mercatorYMax);
-
-      const sourceX = Math.floor(mercatorX * sourceWidth);
-      const sourceY = Math.floor(mercatorY * sourceHeight);
-
-      if (
-        sourceX >= 0 &&
-        sourceX < sourceWidth &&
-        sourceY >= 0 &&
-        sourceY < sourceHeight
-      ) {
-        const sourceIndex = (sourceY * sourceWidth + sourceX) * BYTES_PER_PIXEL;
-        const outputIndex = (y * outputWidth + x) * BYTES_PER_PIXEL;
-
-        outputImageData.data[outputIndex] = sourceData.data[sourceIndex];
-        outputImageData.data[outputIndex + 1] =
-          sourceData.data[sourceIndex + 1];
-        outputImageData.data[outputIndex + 2] =
-          sourceData.data[sourceIndex + 2];
-        outputImageData.data[outputIndex + 3] =
-          sourceData.data[sourceIndex + 3];
-      }
-    }
-  }
-
-  outputCtx.putImageData(outputImageData, 0, 0);
-  return outputCanvas;
 }
 
 const mercator = {
@@ -83,9 +25,21 @@ const mercator = {
   },
 
   convert(image) {
-    const preview = ProjectionUtils.downscaleForPreview(image);
-    const outputWidth = preview.width;
-    const outputHeight = Math.round(outputWidth / 2);
-    return mercatorToEquirectangular(preview, outputWidth, outputHeight);
+    return mercatorToEquirectangular(
+      ProjectionUtils.downscaleForPreview(image),
+    );
+  },
+
+  convertFullRes(image) {
+    return ProjectionUtils.convertWithWorker(
+      image,
+      "projections/mercator/mercator-worker.js",
+      function (sourceData, img) {
+        return {
+          data: { src: sourceData.data, width: img.width, height: img.height },
+          transfer: [sourceData.data.buffer],
+        };
+      },
+    );
   },
 };
