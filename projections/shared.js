@@ -56,26 +56,20 @@ const ProjectionUtils = {
     if (document.getElementById(prefix + "Scale")) return;
     const container = document.getElementById("projectionConfig");
     container.innerHTML = `
-      <div class="config-group">
+      <div class="slider-row">
         <label>Scale</label>
-        <div class="scale-controls">
-          <input type="range" id="${prefix}Scale" min="0.5" max="1.5" step="0.001" value="1">
-          <input type="number" id="${prefix}ScaleInput" min="0.5" max="1.5" step="0.001" value="1">
-        </div>
+        <input type="range" id="${prefix}Scale" min="0.5" max="1.5" step="0.001" value="1">
+        <input type="number" id="${prefix}ScaleInput" min="0.5" max="1.5" step="0.001" value="1">
       </div>
-      <div class="config-group">
+      <div class="slider-row">
         <label>Offset X</label>
-        <div class="scale-controls">
-          <input type="range" id="${prefix}OffsetX" min="-100" max="100" step="0.001" value="0">
-          <input type="number" id="${prefix}OffsetXInput" min="-100" max="100" step="0.001" value="0">
-        </div>
+        <input type="range" id="${prefix}OffsetX" min="-100" max="100" step="0.001" value="0">
+        <input type="number" id="${prefix}OffsetXInput" min="-100" max="100" step="0.001" value="0">
       </div>
-      <div class="config-group">
+      <div class="slider-row">
         <label>Offset Y</label>
-        <div class="scale-controls">
-          <input type="range" id="${prefix}OffsetY" min="-100" max="100" step="0.001" value="0">
-          <input type="number" id="${prefix}OffsetYInput" min="-100" max="100" step="0.001" value="0">
-        </div>
+        <input type="range" id="${prefix}OffsetY" min="-100" max="100" step="0.001" value="0">
+        <input type="number" id="${prefix}OffsetYInput" min="-100" max="100" step="0.001" value="0">
       </div>
     `;
 
