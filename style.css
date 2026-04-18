@@ -315,22 +315,41 @@ button:disabled {
 }
 
 footer {
-  text-align: center;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid #ececec;
 }
 
-.github-link {
-  font-size: 0.875rem;
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+}
+
+.footer-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
   color: #666;
-}
-
-.github-link a {
-  color: #1a1a1a;
   text-decoration: none;
-  font-weight: 500;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s;
+  padding: 0.375rem 0.625rem;
+  border-radius: 5px;
+  transition: color 0.15s, background 0.15s;
 }
 
-.github-link a:hover {
-  border-bottom-color: #1a1a1a;
+.footer-nav a:hover {
+  color: #1a1a1a;
+  background: #f0f0f0;
+}
+
+.footer-nav a svg {
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.footer-nav a:hover svg {
+  opacity: 1;
 }
