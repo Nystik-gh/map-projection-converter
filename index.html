@@ -36,8 +36,16 @@
           <div id="projectionConfig" class="projection-config"></div>
           
           <div class="form-group">
-            <label for="fileInput">Input Image</label>
-            <input type="file" id="fileInput" accept="image/*">
+            <label class="field-label">Input Image</label>
+            <label class="dropzone" id="dropzone">
+              <strong>Drop an image, or click to choose</strong>
+              <span class="hint">PNG or JPG</span>
+              <input type="file" id="fileInput" accept="image/*">
+            </label>
+            <div class="file-chip" id="fileChip" style="display: none;">
+              <span class="name" id="fileChipName"></span>
+              <button type="button" id="replaceBtn">Replace</button>
+            </div>
           </div>
         </div>
 
@@ -94,45 +102,86 @@
   <script>
 let currentProjection = null;
 let currentImage = null;
+let currentFileName = null;
 let outputCanvasCache = null;
 
 function initializeApp() {
   const projectionSelect = document.getElementById('projectionSelect');
   const configContainer = document.getElementById('projectionConfig');
   const fileInput = document.getElementById('fileInput');
+  const dropzone = document.getElementById('dropzone');
+  const fileChip = document.getElementById('fileChip');
+  const fileChipName = document.getElementById('fileChipName');
+  const replaceBtn = document.getElementById('replaceBtn');
   const allProjections = getAllProjections();
-  
+
   allProjections.forEach(projection => {
     const option = document.createElement('option');
     option.value = projection.id;
     option.textContent = projection.name;
     projectionSelect.appendChild(option);
   });
-  
+
   currentProjection = allProjections[0];
   currentProjection.renderConfig(configContainer, performConversion);
-  
+
   projectionSelect.addEventListener('change', (e) => {
     currentProjection = getProjectionById(e.target.value);
     currentProjection.renderConfig(configContainer, performConversion);
+
     if (currentImage) {
       performConversion();
     }
   });
-  
-  fileInput.addEventListener('change', (e) => {
-    if (!e.target.files.length) return;
-    
-    const file = e.target.files[0];
+
+  function loadFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+
+    currentFileName = file.name;
     const img = new Image();
     img.src = URL.createObjectURL(file);
-    
+
     img.onload = () => {
       currentImage = img;
+      dropzone.style.display = 'none';
+      fileChip.style.display = 'flex';
+      fileChipName.textContent = currentFileName;
       performConversion();
     };
+  }
+
+  fileInput.addEventListener('change', (e) => {
+    if (!e.target.files.length) return;
+
+    loadFile(e.target.files[0]);
   });
-  
+
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.setAttribute('data-dragover', 'true');
+  });
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.removeAttribute('data-dragover');
+  });
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.removeAttribute('data-dragover');
+    const f = e.dataTransfer.files[0];
+
+    if (f) loadFile(f);
+  });
+
+  replaceBtn.addEventListener('click', () => {
+    currentImage = null;
+    currentFileName = null;
+    outputCanvasCache = null;
+    fileInput.value = '';
+    dropzone.style.display = 'block';
+    fileChip.style.display = 'none';
+    document.getElementById('previewSection').style.display = 'none';
+    document.getElementById('actionSection').style.display = 'none';
+  });
+
   document.getElementById('downloadBtn').addEventListener('click', downloadResult);
 }
 
