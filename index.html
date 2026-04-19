@@ -267,16 +267,18 @@ function downloadResult() {
   const processedImage = getPreparedImage();
   const downloadBtn = document.getElementById('downloadBtn');
   const spinner = document.getElementById('downloadSpinner');
-  
+  const base = (currentFileName || 'map').replace(/\.[^/.]+$/, '');
+  const downloadName = `${base}-equirectangular.png`;
+
   if (currentProjection.convertFullRes) {
     downloadBtn.disabled = true;
     spinner.style.display = 'flex';
-    
+
     currentProjection.convertFullRes(processedImage).then(function(canvas) {
       canvas.toBlob(function(blob) {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'equirectangular.png';
+        a.download = downloadName;
         a.click();
         downloadBtn.disabled = false;
         spinner.style.display = 'none';
@@ -290,7 +292,7 @@ function downloadResult() {
     outputCanvasCache.toBlob(function(blob) {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'equirectangular.png';
+      a.download = downloadName;
       a.click();
     }, 'image/png');
   }
