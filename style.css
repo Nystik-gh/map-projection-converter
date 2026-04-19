@@ -282,11 +282,24 @@ button:disabled {
   padding: 1.5rem;
 }
 
+.preview-pane .pane-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
 .preview-pane h3 {
   font-size: 1rem;
   font-weight: 600;
-  margin: 0 0 1rem 0;
+  margin: 0;
   color: #1a1a1a;
+}
+
+.preview-pane .dims {
+  font-size: 0.75rem;
+  color: #999;
+  font-variant-numeric: tabular-nums;
 }
 
 .canvas-wrapper {
@@ -305,6 +318,19 @@ button:disabled {
   align-items: center;
   justify-content: center;
   min-height: 200px;
+  position: relative;
+}
+
+.canvas-wrapper .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  color: #333;
 }
 
 .canvas-wrapper canvas {

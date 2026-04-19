@@ -62,16 +62,29 @@
 
       <div id="previewSection" class="preview-section" style="display: none;">
         <div class="preview-pane">
-          <h3>Input</h3>
+          <div class="pane-head">
+            <h3>Input</h3>
+            <span class="dims" id="inputDims"></span>
+          </div>
           <div class="canvas-wrapper">
             <canvas id="inputCanvas"></canvas>
+            <div class="overlay" id="inputOverlay" style="display: none;">
+              <div class="spinner-icon"></div>
+              <span>Rendering…</span>
+            </div>
           </div>
         </div>
-        
+
         <div class="preview-pane">
-          <h3>Equirectangular Output</h3>
+          <div class="pane-head">
+            <h3>Equirectangular Output</h3>
+          </div>
           <div class="canvas-wrapper">
             <canvas id="outputCanvas"></canvas>
+            <div class="overlay" id="outputOverlay" style="display: none;">
+              <div class="spinner-icon"></div>
+              <span>Rendering…</span>
+            </div>
           </div>
         </div>
       </div>
@@ -146,6 +159,7 @@ function initializeApp() {
       dropzone.style.display = 'none';
       fileChip.style.display = 'flex';
       fileChipName.textContent = currentFileName;
+      document.getElementById('inputDims').textContent = `${img.width}\u00d7${img.height}`;
       performConversion();
     };
   }
@@ -214,27 +228,37 @@ function updateInputPreview() {
 
 function performConversion() {
   if (!currentImage) return;
-  
-  if (currentProjection.showConfig) {
-    currentProjection.showConfig();
-    currentProjection._onInput = updateInputPreview;
-  }
-  
-  const processedImage = getPreparedImage();
-  
-  updateInputPreview();
-  
-  const outputCanvas = document.getElementById('outputCanvas');
-  const actionSection = document.getElementById('actionSection');
-  
-  outputCanvasCache = currentProjection.convert(processedImage);
-  
-  outputCanvas.width = outputCanvasCache.width;
-  outputCanvas.height = outputCanvasCache.height;
-  const outputCtx = outputCanvas.getContext('2d');
-  outputCtx.drawImage(outputCanvasCache, 0, 0);
-  
-  actionSection.style.display = 'block';
+
+  const inputOverlay = document.getElementById('inputOverlay');
+  const outputOverlay = document.getElementById('outputOverlay');
+  inputOverlay.style.display = 'flex';
+  outputOverlay.style.display = 'flex';
+
+  requestAnimationFrame(() => {
+    if (currentProjection.showConfig) {
+      currentProjection.showConfig();
+      currentProjection._onInput = updateInputPreview;
+    }
+
+    const processedImage = getPreparedImage();
+
+    updateInputPreview();
+
+    const outputCanvas = document.getElementById('outputCanvas');
+    const actionSection = document.getElementById('actionSection');
+
+    outputCanvasCache = currentProjection.convert(processedImage);
+
+    outputCanvas.width = outputCanvasCache.width;
+    outputCanvas.height = outputCanvasCache.height;
+    const outputCtx = outputCanvas.getContext('2d');
+    outputCtx.drawImage(outputCanvasCache, 0, 0);
+
+    actionSection.style.display = 'block';
+
+    inputOverlay.style.display = 'none';
+    outputOverlay.style.display = 'none';
+  });
 }
 
 function downloadResult() {
