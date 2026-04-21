@@ -12,7 +12,7 @@ body {
   padding: 0;
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
 
@@ -24,6 +24,7 @@ body {
 
 header {
   margin-bottom: 2.5rem;
+  padding-left: 2rem;
 }
 
 h1 {
@@ -38,6 +39,81 @@ h1 {
   color: #666;
   margin: 0;
   font-weight: 400;
+}
+
+.top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 480px) 1fr;
+  gap: 3rem;
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 900px) {
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .top-row {
+    display: contents;
+  }
+
+  .upload-section {
+    order: 1;
+    margin-bottom: 0 !important;
+  }
+
+  .preview-section {
+    order: 2;
+    margin-bottom: 0;
+  }
+
+  .aside {
+    order: 3;
+  }
+
+  .action-section {
+    order: 4;
+    margin-bottom: 0;
+  }
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.aside h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #1a1a1a;
+}
+
+.aside p {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
+}
+
+.aside a,
+.globe-link {
+  font-size: 0.875rem;
+  color: #1a1a1a;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid #1a1a1a;
+  padding-bottom: 1px;
+}
+
+.aside a:hover {
+  color: #666;
+  border-bottom-color: #666;
 }
 
 .upload-section {

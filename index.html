@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=1.0.4">
 <script src="analytics.js"></script>
 <script src="projections/shared.js?v=1.0.2"></script>
 <script src="projections/mercator/mercator-core.js?v=1.0.1"></script>
@@ -27,7 +27,7 @@
     </header>
 
     <main>
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; width: 100%;">
+      <div class="top-row">
         <div class="upload-section" style="margin-bottom: 0;">
           <div class="form-group">
             <label class="field-label">Input Image</label>
@@ -50,7 +50,7 @@
           <div id="projectionConfig" class="projection-config"></div>
         </div>
 
-        <div class="aside" style="max-width: 300px;">
+        <div class="aside">
           <div class="info-section" id="globeInfo">
             <h3>View as Globe</h3>
             <p>After converting to equirectangular, you can view the result as an interactive 3D globe using a separate tool:</p>
