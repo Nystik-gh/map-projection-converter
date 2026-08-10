@@ -65,6 +65,18 @@ header {
   background: #f5f5f5;
 }
 
+.kofi-btn {
+  gap: 0.5rem;
+  background: #ff5e5b;
+  border-color: #ff5e5b;
+  color: white;
+}
+
+.kofi-btn:hover {
+  background: #e94e4b;
+  border-color: #e94e4b;
+}
+
 @media (max-width: 900px) {
   header {
     grid-template-columns: 1fr;

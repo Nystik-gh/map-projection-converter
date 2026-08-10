@@ -25,6 +25,8 @@ const ProjectionUtils = {
 
   prepareImage(image, config, aspectRatio = 2) {
     const scale = config.scale || 1;
+    const scaleX = config.scaleX || 1;
+    const scaleY = config.scaleY || 1;
     const userOffsetX = config.offsetX || 0;
     const userOffsetY = config.offsetY || 0;
     const canvasHeight = Math.round(
@@ -37,8 +39,9 @@ const ProjectionUtils = {
     prepared.height = canvasHeight;
     const ctx = prepared.getContext("2d");
 
-    const scaledWidth = image.width * (canvasHeight / image.height) * scale;
-    const scaledHeight = canvasHeight * scale;
+    const scaledWidth =
+      image.width * (canvasHeight / image.height) * scale * scaleX;
+    const scaledHeight = canvasHeight * scale * scaleY;
     const offsetX = (canvasWidth - scaledWidth) / 2 + userOffsetX;
     const offsetY = (canvasHeight - scaledHeight) / 2 + userOffsetY;
 
@@ -60,6 +63,16 @@ const ProjectionUtils = {
         <label>Scale</label>
         <input type="range" id="${prefix}Scale" min="0.5" max="1.5" step="0.001" value="1">
         <input type="number" id="${prefix}ScaleInput" min="0.5" max="1.5" step="0.001" value="1">
+      </div>
+      <div class="slider-row">
+        <label>Scale X</label>
+        <input type="range" id="${prefix}ScaleX" min="0.5" max="1.5" step="0.001" value="1">
+        <input type="number" id="${prefix}ScaleXInput" min="0.5" max="1.5" step="0.001" value="1">
+      </div>
+      <div class="slider-row">
+        <label>Scale Y</label>
+        <input type="range" id="${prefix}ScaleY" min="0.5" max="1.5" step="0.001" value="1">
+        <input type="number" id="${prefix}ScaleYInput" min="0.5" max="1.5" step="0.001" value="1">
       </div>
       <div class="slider-row">
         <label>Offset X</label>
@@ -93,16 +106,22 @@ const ProjectionUtils = {
     };
 
     setupControl(prefix + "Scale", prefix + "ScaleInput");
+    setupControl(prefix + "ScaleX", prefix + "ScaleXInput");
+    setupControl(prefix + "ScaleY", prefix + "ScaleYInput");
     setupControl(prefix + "OffsetX", prefix + "OffsetXInput");
     setupControl(prefix + "OffsetY", prefix + "OffsetYInput");
   },
 
   getSliderConfig(prefix) {
     const scaleEl = document.getElementById(prefix + "Scale");
+    const scaleXEl = document.getElementById(prefix + "ScaleX");
+    const scaleYEl = document.getElementById(prefix + "ScaleY");
     const offXEl = document.getElementById(prefix + "OffsetX");
     const offYEl = document.getElementById(prefix + "OffsetY");
     return {
       scale: scaleEl ? parseFloat(scaleEl.value) : 1,
+      scaleX: scaleXEl ? parseFloat(scaleXEl.value) : 1,
+      scaleY: scaleYEl ? parseFloat(scaleYEl.value) : 1,
       offsetX: offXEl ? parseFloat(offXEl.value) : 0,
       offsetY: offYEl ? parseFloat(offYEl.value) : 0,
     };
