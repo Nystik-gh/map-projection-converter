@@ -5,9 +5,11 @@ Most softwares don't support converting map projections back to equirectangular,
 Currently supported projections:
 
 - Mercator
+- Miller
 - Nicolosi Globular
 - Robinson
 - Winkel Tripel
+- Mollweide
 
 No guarantees that any of these will be perfectly accurate.
 
