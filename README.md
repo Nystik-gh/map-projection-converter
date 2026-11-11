@@ -7,6 +7,7 @@ Currently supported projections:
 - Mercator
 - Miller
 - Nicolosi Globular
+- Polar Azimuthal Equidistant (north and south hemispheres)
 - Robinson
 - Winkel Tripel
 - Mollweide
